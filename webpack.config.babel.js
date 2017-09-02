@@ -1,6 +1,7 @@
 import path from 'path';
 
 export default {
+  target: 'web',
   entry: ['babel-polyfill', './src/index.js'],
   output: {
     filename: 'bundle.js',

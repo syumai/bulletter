@@ -13,9 +13,18 @@
     </style>
   </head>
   <body>
-    <div id="app">
-      <bulletter src="resources/example.mp4"></bulletter>
+    <video id="bulletter"></video>
+    <div>
+      <input id="fileInput" type="file" accept=".mp4, .webm">
     </div>
     <script src="./dist/bundle.js"></script>
+  <script>
+var fileInput = document.getElementById('fileInput');
+fileInput.addEventListener('change', function (event) {
+  bulletter('bulletter', {
+    src: event.target.files[0]
+  });
+});
+  </script>
   </body>
 </html>

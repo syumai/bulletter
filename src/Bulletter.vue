@@ -70,22 +70,28 @@ const App = {
     },
   },
   mounted() {
-    const req = new XMLHttpRequest();
-    req.open('GET', this.src, true);
-    req.responseType = 'blob';
+    if (typeof this.src === 'string') {
+      const req = new XMLHttpRequest();
+      req.open('GET', this.src, true);
+      req.responseType = 'blob';
 
-    req.onload = () => {
-      console.log(req.status);
-      if (req.status === 200) {
-        const blob = req.response;
-        console.log(blob);
-        const url = URL.createObjectURL(blob);
-        this.loaded = true;
-        this.url = url;
+      req.onload = () => {
+        console.log(req.status);
+        if (req.status === 200) {
+          const blob = req.response;
+          console.log(blob);
+          const url = URL.createObjectURL(blob);
+          this.loaded = true;
+          this.url = url;
+        }
       }
-    }
 
-    req.send();
+      req.send();
+    } else if (this.src instanceof File) {
+      const url = URL.createObjectURL(this.src);
+      this.loaded = true;
+      this.url = url;
+    }
   }
 };
 

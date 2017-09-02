@@ -2,6 +2,10 @@
 
 Player for video with bullet time effect
 
+## Demo
+
+https://syumai.github.io/bulletter/
+
 ## Development
 
 ```sh
