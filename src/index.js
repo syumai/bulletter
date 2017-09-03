@@ -2,17 +2,26 @@ import 'babel-polyfill';
 import Vue from 'vue';
 import Bulletter from './Bulletter';
 
-window.bulletter = function (id, options) {
+window.bulletter = function (id, options = {}) {
   const video = document.getElementById(id);
-  const { src } = options;
-  new Vue({
+  let { src, frames, speed } = options;
+  if (!src) {
+    src = video.src;
+  }
+  return new Vue({
     el: video,
     data: {
-      video,
-      src
+      src,
+      frames,
+      speed
     },
-    template: `<Bulletter :src="src || video.src"/>`,
+    template: `<Bulletter :src="src" :frames="frames" :speed="speed" @progress="onProgress"/>`,
     components: { Bulletter },
+    methods: {
+      onProgress(e) {
+        this.$emit('progress', e);
+      }
+    }
   });
 }
 

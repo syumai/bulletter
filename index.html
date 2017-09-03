@@ -14,18 +14,48 @@
     </style>
   </head>
   <body>
-    <video id="bulletter" class="bulletter"></video>
+    <video id="bulletter"
+      class="bulletter"
+      ></video>
+    <div>
+      <p id="frames">Frames: </p>
+      <p id="loaded">Loaded: </p>
+    </div>
     <div>
       <input id="fileInput" type="file" accept=".mp4, .webm">
     </div>
     <script src="./dist/bundle.js"></script>
   <script>
-var fileInput = document.getElementById('fileInput');
-fileInput.addEventListener('change', function (event) {
-  bulletter('bulletter', {
-    src: event.target.files[0]
-  });
-});
+  var bulletterElement = document.getElementById('bulletter');
+  var fileInput = document.getElementById('fileInput');
+
+  function initProgress() {
+    var framesElement = document.getElementById('frames');
+    var loadedElement = document.getElementById('loaded');
+    app.$on('progress', function (e) {
+      console.log('progress');
+      framesElement.textContent = 'Frames: ' + e.frames;
+      loadedElement.textContent = 'Loaded: ' + e.loaded + ' / ' + e.frames;
+    });
+  }
+
+  let app;
+  if (bulletterElement.src) {
+    app = bulletter('bulletter', {
+      frames: 60,
+      speed: 2
+    });
+    initProgress();
+  } else {
+    fileInput.addEventListener('change', function (event) {
+      app = bulletter('bulletter', {
+        src: event.target.files[0],
+        frames: 60,
+        speed: 2
+      });
+      initProgress();
+    });
+  }
   </script>
   </body>
 </html>

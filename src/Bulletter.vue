@@ -1,73 +1,86 @@
 <template>
-  <video class="bulletter" :src="url"
-    @touchstart="onTouchStart"
-    @mousedown="onMouseDown"
-    @touchmove.prevent="onTouchMove"
-    @mousemove="onMouseMove"
-    @touchend="onTouchEnd"
-    @mouseup="onMouseUp"
-    @loadedmetadata="onLoadedMetaData"/>
+  <div class="bulletter">
+    <bullet-video :src="url"/>
+    <bullet-canvas
+      :width="width"
+      :height="height"
+      :speed="speed"
+      :image-objects="sortedImageObjects"
+      ref="bulletCanvas"/>
+    <div v-if="!loadedAll">
+      <capture-video v-for="(time, index) in times"
+        :src="url"
+        :time="time"
+        :index="index"
+        :width="width"
+        :height="height"
+        :key="`bullet-${index}`"/>
+    </div>
+    <div v-if="false">
+      <img v-for="({ index, url }) in sortedImageObjects" :src="url" :key="`image-${index}`"/>
+    </div>
+  </div>
 </template>
 
 <script>
+import BulletVideo from './BulletVideo';
+import BulletCanvas from './BulletCanvas';
+import CaptureVideo from './CaptureVideo';
+
 const App = {
-  props: ['src'],
+  props: {
+    src: null, 
+    frames: {
+      type: Number,
+      default: 30
+    },
+    speed: {
+      type: Number,
+      default: 1
+    }
+  },
+  components: { BulletVideo, BulletCanvas, CaptureVideo },
   data() {
     return {
       url: null,
-      dragging: false,
-      originX: 0,
-      originY: 0,
-      originTime: 0,
-      time: 0,
       duration: 0,
-      loaded: false
+      loaded: false,
+      width: 0,
+      height: 0,
+      times: [],
+      imageObjects: []
     };
   },
   computed: {
     percent() {
       return this.time / this.duration * 100;
+    },
+    sortedImageObjects() {
+      return this.imageObjects
+        .sort((a, b) => a.index - b.index);
+    },
+    loadedCount() {
+      return this.imageObjects.length + 1;
+    },
+    progress() {
+      return Math.round((this.loadedCount / this.frames) * 100);
+    },
+    loadedAll() {
+      return this.progress === 100;
     }
   },
   methods: {
-    onTouchStart(e) {
-      const event = e.changedTouches[0];
-      this.onMouseDown(event);
-    },
-    onMouseDown(e) {
-      this.dragging = true;
-      this.originX = e.pageX - e.target.offsetLeft;
-      this.originY = e.pageY - e.target.offsetTop;
-      this.originTime = this.time;
-    },
-    onTouchMove(e) {
-      const event = e.changedTouches[0];
-      this.onMouseMove(event);
-    },
-    onMouseMove(e) {
-      const { target } = e;
-      if (this.dragging) {
-        const containerWidth = target.clientWidth;
-        const percent = (e.pageX - this.originX) / containerWidth * 100;
-        const time = this.originTime + (percent / 100) * this.duration;
-        if (time < this.duration && this.duration > 0) {
-          target.currentTime = time;
-          this.time = time;
-        }
+    pushImage(imageObject) {
+      this.imageObjects.push(imageObject);
+      this.$emit('progress', { 
+        frames: this.frames,
+        loaded: this.loadedCount,
+        progress: this.progress
+      });
+      if (imageObject.index === Math.round(this.frames / 2)) {
+        this.$refs.bulletCanvas.seek(imageObject.index);
       }
-    },
-    onTouchEnd(e) {
-      const event = e.changedTouches[0];
-      this.onMouseUp(event);
-    },
-    onMouseUp() {
-      this.dragging = false;
-    },
-    onLoadedMetaData(e) {
-      console.log(e);
-      this.duration = e.target.duration;
-      console.log(this.duration);
-    },
+    }
   },
   mounted() {
     if (typeof this.src === 'string') {
